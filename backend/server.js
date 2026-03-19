@@ -58,7 +58,7 @@ try {
 
 } catch (error) {
   // If anything crashes during initialization (e.g. missing DB_NAME), serve the exact error!
-  app.all('/(.*)', (req, res) => {
+  app.use((req, res) => {
     res.status(500).json({
       error: 'Backend Initialization Crashed',
       message: error.message,

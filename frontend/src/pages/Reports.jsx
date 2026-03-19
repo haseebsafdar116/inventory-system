@@ -5,7 +5,8 @@ const Reports = () => {
   const handleDownload = (type) => {
     const token = localStorage.getItem('token');
     // Using fetch to trigger download with Auth headers (since simple window.open won't send headers easily)
-    fetch(`http://localhost:5000/api/reports/${type}`, {
+    const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    fetch(`${API_BASE}/reports/${type}`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }

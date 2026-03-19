@@ -43,10 +43,14 @@ sequelize.authenticate()
     return sequelize.sync();
   })
   .then(() => {
-    app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
-    });
+    if (process.env.NODE_ENV !== 'production') {
+      app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`);
+      });
+    }
   })
   .catch(err => {
     console.error('Unable to connect to the database:', err);
   });
+
+module.exports = app;

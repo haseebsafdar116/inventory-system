@@ -1,4 +1,6 @@
-require('dotenv').config();
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
+}
 const express = require('express');
 const cors = require('cors');
 
@@ -56,7 +58,7 @@ try {
 
 } catch (error) {
   // If anything crashes during initialization (e.g. missing DB_NAME), serve the exact error!
-  app.all('*', (req, res) => {
+  app.all('/(.*)', (req, res) => {
     res.status(500).json({
       error: 'Backend Initialization Crashed',
       message: error.message,

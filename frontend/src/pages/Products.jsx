@@ -3,11 +3,11 @@ import { motion } from 'framer-motion';
 import { Plus, Edit, Trash2, Search, Package, Upload } from 'lucide-react';
 import api from '../api/axios';
 import { AuthContext } from '../context/AuthContext';
+import { DataContext } from '../context/DataContext';
 import Modal from '../components/Modal';
 
 const Products = () => {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { products, loadingProducts, fetchProducts } = useContext(DataContext);
   const [searchTerm, setSearchTerm] = useState('');
   const { user } = useContext(AuthContext);
   
@@ -19,20 +19,6 @@ const Products = () => {
   const [formData, setFormData] = useState({
     name: '', sku: '', price: '', stock: '', low_stock_threshold: '10'
   });
-
-  const fetchProducts = async () => {
-    try {
-      const res = await api.get('/products');
-      setProducts(res.data);
-    } catch (error) {
-      console.error("Error fetching products", error);
-    }
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    fetchProducts();
-  }, []);
 
   const handleOpenModal = (product = null) => {
     if (product) {
@@ -60,7 +46,7 @@ const Products = () => {
         await api.post('/products', formData);
       }
       setIsModalOpen(false);
-      fetchProducts();
+      fetchProducts(true);
     } catch (error) {
       alert(error.response?.data?.message || 'Error saving product');
     }
@@ -70,7 +56,7 @@ const Products = () => {
     if (window.confirm('Are you sure you want to delete this product?')) {
       try {
         await api.delete(`/products/${id}`);
-        fetchProducts();
+        fetchProducts(true);
       } catch (error) {
         alert(error.response?.data?.message || 'Error deleting product');
       }
@@ -102,7 +88,7 @@ const Products = () => {
 
       try {
         await api.post('/products/bulk', { products: productsToBulkCreate });
-        fetchProducts();
+        fetchProducts(true);
         alert(`Successfully imported ${productsToBulkCreate.length} products!`);
       } catch (err) {
         alert(err.response?.data?.message || 'Error bulk importing products');
@@ -152,7 +138,7 @@ const Products = () => {
           />
         </div>
 
-        {loading ? (
+        {loadingProducts && products.length === 0 ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
           </div>

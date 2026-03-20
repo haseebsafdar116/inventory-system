@@ -3,10 +3,10 @@ import { motion } from 'framer-motion';
 import { Search, Plus, Trash2, ShoppingCart, CreditCard, User, Printer, Package } from 'lucide-react';
 import api from '../api/axios';
 import { AuthContext } from '../context/AuthContext';
+import { DataContext } from '../context/DataContext';
 
 const Billing = () => {
-  const [products, setProducts] = useState([]);
-  const [customers, setCustomers] = useState([]);
+  const { products, customers, fetchProducts, fetchStats } = useContext(DataContext);
   const [cart, setCart] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCustomer, setSelectedCustomer] = useState('');
@@ -14,21 +14,7 @@ const Billing = () => {
   const [loading, setLoading] = useState(false);
   const { user } = useContext(AuthContext);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [prodRes, custRes] = await Promise.all([
-          api.get('/products'),
-          api.get('/customers')
-        ]);
-        setProducts(prodRes.data.filter(p => p.stock > 0)); 
-        setCustomers(custRes.data);
-      } catch (error) {
-        console.error("Error fetching data for billing", error);
-      }
-    };
-    fetchData();
-  }, []);
+  // Remove local fetchData and useEffect
 
   const addToCart = (product) => {
     const existing = cart.find(item => item.id === product.id);
@@ -88,11 +74,9 @@ const Billing = () => {
       setSelectedCustomer('');
       setPaymentMethod('Cash');
       
-      // Refresh products to get updated stock
-      const prodRes = await api.get('/products');
-      setProducts(prodRes.data.filter(p => p.stock > 0));
-      window.dispatchEvent(new Event('stockUpdated'));
-
+      // Refresh context data
+      fetchProducts(true);
+      fetchStats(true);
     } catch (error) {
       alert(error.response?.data?.message || 'Error processing sale');
     }
@@ -100,8 +84,10 @@ const Billing = () => {
   };
 
   const filteredProducts = products.filter(p => 
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    (p.sku && p.sku.toLowerCase().includes(searchTerm.toLowerCase()))
+    p.stock > 0 && (
+      p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      (p.sku && p.sku.toLowerCase().includes(searchTerm.toLowerCase()))
+    )
   );
 
   return (

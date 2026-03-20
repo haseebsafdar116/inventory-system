@@ -2,11 +2,11 @@ import React, { useState, useEffect, useContext } from 'react';
 import { Plus, Edit, Trash2, Search, UserCircle } from 'lucide-react';
 import api from '../api/axios';
 import { AuthContext } from '../context/AuthContext';
+import { DataContext } from '../context/DataContext';
 import Modal from '../components/Modal';
 
 const Customers = () => {
-  const [customers, setCustomers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { customers, loadingCustomers, fetchCustomers } = useContext(DataContext);
   const [searchTerm, setSearchTerm] = useState('');
   const { user } = useContext(AuthContext);
   
@@ -14,17 +14,7 @@ const Customers = () => {
   const [editingCustomer, setEditingCustomer] = useState(null);
   const [formData, setFormData] = useState({ name: '', phone: '', email: '' });
 
-  const fetchCustomers = async () => {
-    try {
-      const res = await api.get('/customers');
-      setCustomers(res.data);
-    } catch (error) {
-      console.error(error);
-    }
-    setLoading(false);
-  };
-
-  useEffect(() => { fetchCustomers(); }, []);
+  // Remove local fetchCustomers and useEffect
 
   const handleOpenModal = (customer = null) => {
     setEditingCustomer(customer);
@@ -38,14 +28,14 @@ const Customers = () => {
       if (editingCustomer) await api.put(`/customers/${editingCustomer.id}`, formData);
       else await api.post('/customers', formData);
       setIsModalOpen(false);
-      fetchCustomers();
+      fetchCustomers(true);
     } catch (error) { alert('Error saving customer'); }
   };
 
   const handleDelete = async (id) => {
     if (window.confirm('Delete customer?')) {
       await api.delete(`/customers/${id}`);
-      fetchCustomers();
+      fetchCustomers(true);
     }
   };
 
@@ -64,7 +54,7 @@ const Customers = () => {
           <Search className="text-gray-400" size={20} />
           <input type="text" placeholder="Search customers..." className="bg-transparent outline-none w-full" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
         </div>
-        {!loading && (
+        {(!loadingCustomers || customers.length > 0) && (
           <table className="w-full text-left">
             <thead>
               <tr className="bg-slate-50 text-slate-700 border-b border-slate-200">

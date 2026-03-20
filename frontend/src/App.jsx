@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { DataProvider } from './context/DataContext';
 import Layout from './components/Layout';
 // Import pages
 import Login from './pages/Login';
@@ -18,7 +19,8 @@ const Placeholder = ({ name }) => <div className="p-8 text-2xl font-bold text-gr
 function App() {
   return (
     <AuthProvider>
-      <Router>
+      <DataProvider>
+        <Router>
         <Routes>
           <Route path="/login" element={<Login />} />
           
@@ -37,6 +39,7 @@ function App() {
           </Route>
         </Routes>
       </Router>
+      </DataProvider>
     </AuthProvider>
   );
 }

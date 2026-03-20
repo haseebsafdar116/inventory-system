@@ -3,11 +3,11 @@ import { motion } from 'framer-motion';
 import { Plus, Edit, Trash2, Search, Users } from 'lucide-react';
 import api from '../api/axios';
 import { AuthContext } from '../context/AuthContext';
+import { DataContext } from '../context/DataContext';
 import Modal from '../components/Modal';
 
 const Suppliers = () => {
-  const [suppliers, setSuppliers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { suppliers, loadingSuppliers, fetchSuppliers } = useContext(DataContext);
   const [searchTerm, setSearchTerm] = useState('');
   const { user } = useContext(AuthContext);
   
@@ -17,19 +17,7 @@ const Suppliers = () => {
     name: '', contact_person: '', phone: '', email: '', address: ''
   });
 
-  const fetchSuppliers = async () => {
-    try {
-      const res = await api.get('/suppliers');
-      setSuppliers(res.data);
-    } catch (error) {
-      console.error("Error fetching suppliers", error);
-    }
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    fetchSuppliers();
-  }, []);
+  // Remove local fetchSuppliers and useEffect
 
   const handleOpenModal = (supplier = null) => {
     if (supplier) {
@@ -51,7 +39,7 @@ const Suppliers = () => {
         await api.post('/suppliers', formData);
       }
       setIsModalOpen(false);
-      fetchSuppliers();
+      fetchSuppliers(true);
     } catch (error) {
       alert(error.response?.data?.message || 'Error saving supplier');
     }
@@ -61,7 +49,7 @@ const Suppliers = () => {
     if (window.confirm('Delete this supplier?')) {
       try {
         await api.delete(`/suppliers/${id}`);
-        fetchSuppliers();
+        fetchSuppliers(true);
       } catch (error) {
         alert(error.response?.data?.message || 'Error deleting supplier');
       }
@@ -98,7 +86,7 @@ const Suppliers = () => {
           />
         </div>
 
-        {loading ? (
+        {loadingSuppliers && suppliers.length === 0 ? (
           <div className="text-center py-12">Loading...</div>
         ) : (
           <table className="w-full text-left">

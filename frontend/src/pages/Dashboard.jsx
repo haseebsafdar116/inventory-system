@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { Package, DollarSign, AlertTriangle, TrendingUp } from 'lucide-react';
-import api from '../api/axios';
+import { DataContext } from '../context/DataContext';
 
 const StatCard = ({ title, value, icon, color, delay }) => (
   <motion.div
@@ -24,23 +24,9 @@ const StatCard = ({ title, value, icon, color, delay }) => (
 );
 
 const Dashboard = () => {
-  const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { stats, loadingStats } = React.useContext(DataContext);
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const res = await api.get('/dashboard/stats');
-        setStats(res.data);
-      } catch (error) {
-        console.error("Error fetching dashboard stats:", error);
-      }
-      setLoading(false);
-    };
-    fetchStats();
-  }, []);
-
-  if (loading) {
+  if (loadingStats && !stats) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>

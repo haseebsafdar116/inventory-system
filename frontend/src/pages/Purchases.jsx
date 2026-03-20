@@ -2,35 +2,23 @@ import React, { useState, useEffect, useContext } from 'react';
 import { Plus, Search, Truck } from 'lucide-react';
 import api from '../api/axios';
 import { AuthContext } from '../context/AuthContext';
+import { DataContext } from '../context/DataContext';
 import Modal from '../components/Modal';
 
 const Purchases = () => {
-  const [purchases, setPurchases] = useState([]);
-  const [products, setProducts] = useState([]);
-  const [suppliers, setSuppliers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { 
+    purchases, loadingPurchases, fetchPurchases, 
+    products, fetchProducts,
+    suppliers, fetchSuppliers,
+    fetchStats 
+  } = useContext(DataContext);
+  
   const { user } = useContext(AuthContext);
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({ supplierId: '', productId: '', quantity: '', unit_cost: '' });
 
-  const fetchData = async () => {
-    try {
-      const [purRes, prodRes, supRes] = await Promise.all([
-        api.get('/purchases'),
-        api.get('/products'),
-        api.get('/suppliers')
-      ]);
-      setPurchases(purRes.data);
-      setProducts(prodRes.data);
-      setSuppliers(supRes.data);
-    } catch (error) {
-      console.error(error);
-    }
-    setLoading(false);
-  };
-
-  useEffect(() => { fetchData(); }, []);
+  // Remove local fetchData and useEffect
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -42,8 +30,9 @@ const Purchases = () => {
       });
       setIsModalOpen(false);
       setFormData({ supplierId: '', productId: '', quantity: '', unit_cost: '' });
-      fetchData();
-      window.dispatchEvent(new Event('stockUpdated'));
+      fetchPurchases(true);
+      fetchProducts(true);
+      fetchStats(true);
     } catch (error) { alert('Error recording purchase'); }
   };
 
@@ -59,7 +48,7 @@ const Purchases = () => {
       </div>
 
       <div className="bg-white rounded-xl shadow-md p-6">
-        {!loading && (
+        {(!loadingPurchases || purchases.length > 0) && (
           <table className="w-full text-left">
             <thead>
               <tr className="bg-slate-50 text-slate-700 border-b border-slate-200">
